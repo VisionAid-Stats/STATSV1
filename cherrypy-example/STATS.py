@@ -8,7 +8,7 @@ from Student import Student
 from Course import Course
 
 cherrypy.server.socket_host = '0.0.0.0'
-cherrypy.config.update({'server.socket_port': 80})
+#cherrypy.config.update({'server.socket_port': 80})
 cherrypy.engine.restart()
 
 if __name__ == '__main__':
