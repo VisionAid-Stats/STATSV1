@@ -7,11 +7,12 @@ from User import User
 from Student import Student
 from Course import Course
 
-cherrypy.server.socket_host = '172.31.86.111'
+cherrypy.server.socket_host = '0.0.0.0'
+cherrypy.config.update({'server.socket_port': 80})
+cherrypy.engine.restart()
 
 if __name__ == '__main__':
     db = Database.Database()
-    # cherrypy.config.update({'server.socket_port': 8081})
     cherrypy.tree.mount(User(db=db), '/user')
     cherrypy.tree.mount(Student(db=db), '/student')
     cherrypy.tree.mount(Course(db=db), '/course')
