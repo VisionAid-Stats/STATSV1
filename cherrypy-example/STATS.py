@@ -10,6 +10,7 @@ from Course import Course
 if __name__ == '__main__':
     db = Database.Database()
     # cherrypy.config.update({'server.socket_port': 8081})
+    cherrypy.config.update({'server.socket_host': 0.0.0.0})
     cherrypy.tree.mount(User(db=db), '/user')
     cherrypy.tree.mount(Student(db=db), '/student')
     cherrypy.tree.mount(Course(db=db), '/course')
