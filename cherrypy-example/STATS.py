@@ -7,7 +7,7 @@ from User import User
 from Student import Student
 from Course import Course
 
-cherrypy.server.socket_host = '3.86.155.57'
+cherrypy.server.socket_host = '172.31.86.111'
 
 if __name__ == '__main__':
     db = Database.Database()
