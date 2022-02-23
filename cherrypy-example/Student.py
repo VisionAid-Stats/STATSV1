@@ -6,6 +6,8 @@ import Database
 class Student():
     def __init__(self, db=Database.Database()):
         self.db = db
+        self.valid_columns = {'email', 'name', 'age', 'gender', 'visual_acuity', 'mobile', 'whatsapp', 'address',
+                              'visual_impairment', 'hear_about'}
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -30,3 +32,18 @@ class Student():
             params=(name,)
         )
         return student
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    def create(self):
+        columns = []
+        values = []
+        data = cherrypy.request.json
+        for col in data:
+            if col not in self.valid_columns:
+                return {'error': 'invalid column "%s"; must be one of: %s' % (col, str(self.valid_columns))}
+            columns.append(col)
+            values.append(data[col])
+        self.db.execute_insert(table='student', columns=columns, values=values)
+        return {'success': True}
