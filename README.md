@@ -7,7 +7,7 @@
 STATS V1.0
 Student Training & Tracking System 
 
-**Objective: To digitize the student training management process for Vision-Aid, a Non-Government Organization (NGO)  that provides training and services for the visually impaired with offices in India and Boston. Currently, program managers (PMs) perform work registering students and tracking progress manually with forms, spreadsheets, and documents. The STATS system will enable more efficient workflows and less duplication of effort.
+Objective: To digitize the student training management process for Vision-Aid, a Non-Government Organization (NGO)  that provides training and services for the visually impaired with offices in India and Boston. Currently, program managers (PMs) perform work registering students and tracking progress manually with forms, spreadsheets, and documents. The STATS system will enable more efficient workflows and less duplication of effort.
 
 1. Student Application Form
 2. Instructor Progress Form
