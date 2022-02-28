@@ -1,4 +1,5 @@
 import cherrypy
+import cherrypy_cors
 
 import Database
 
@@ -37,13 +38,16 @@ class Student():
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
     def create(self):
-        columns = []
-        values = []
-        data = cherrypy.request.json
-        for col in data:
-            if col not in self.valid_columns:
-                return {'error': 'invalid column "%s"; must be one of: %s' % (col, str(self.valid_columns))}
-            columns.append(col)
-            values.append(data[col])
-        self.db.execute_insert(table='student', columns=columns, values=values)
-        return {'success': True}
+        if cherrypy.request.method == 'OPTIONS':
+            cherrypy_cors.preflight(allowed_methods=['POST'])
+        else:
+            columns = []
+            values = []
+            data = cherrypy.request.json
+            for col in data:
+                if col not in self.valid_columns:
+                    return {'error': 'invalid column "%s"; must be one of: %s' % (col, str(self.valid_columns))}
+                columns.append(col)
+                values.append(data[col])
+            self.db.execute_insert(table='student', columns=columns, values=values)
+            return {'success': True}
