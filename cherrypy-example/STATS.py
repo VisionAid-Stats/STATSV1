@@ -23,6 +23,6 @@ if __name__ == '__main__':
     cherrypy.tree.mount(Trainer(db=db), '/trainer')
     cherrypy.tree.mount(CourseOffering(db=db), '/course_offering')
     cherrypy.tree.mount(Centre(db=db), '/centre')
+    cherrypy.engine.signal_handler.subscribe()
     cherrypy.engine.start()
     cherrypy.engine.block()
-    db.close()
