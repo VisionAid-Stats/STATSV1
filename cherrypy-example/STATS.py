@@ -17,6 +17,7 @@ if __name__ == '__main__':
         # 'server.socket_port': '8081',
         'cors.expose.on': True
     })
+    cherrypy.response.headers['Access-Control-Allow-Origin'] = '*'
     cherrypy.tree.mount(User(db=db), '/user')
     cherrypy.tree.mount(Student(db=db), '/student')
     cherrypy.tree.mount(Course(db=db), '/course')
