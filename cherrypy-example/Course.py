@@ -50,3 +50,24 @@ class Course:
                 values.append(data[col])
             self.db.execute_insert(table='course', columns=columns, values=values)
             return {'success': True}
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def interests(self, course=None):
+        statement = '''SELECT i.student_id,
+                              i.course_id,
+                              s.name as student_name,
+                              c.code as course_code,
+                              c.name as course_name
+                       FROM   student_link_course_interest i,
+                              student s,
+                              course c
+                       WHERE i.student_id = s.student_id
+                         AND i.course_id = c.course_id'''
+        if course is None:
+            interests = self.db.execute_select(statement=statement)
+        else:
+            statement += ' AND (c.course_id = %s OR c.code = %s)'
+            interests = self.db.execute_select(statement=statement, params=(course, course))
+
+        return interests
