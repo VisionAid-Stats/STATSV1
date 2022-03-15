@@ -17,7 +17,7 @@ if __name__ == '__main__':
         'server.socket_host': '0.0.0.0',
         'cors.expose.on': True
     }
-    if path.exists('cert.pem') and path.exists('key.pem'):
+    if path.exists('/home/ubuntu/cert.pem') and path.exists('/home/ubuntu/key.pem'):
         config['server.ssl_module'] = 'builtin'
         config['server.ssl_certificate'] = '/home/ubuntu/cert.pem'
         config['server.ssl_private_key'] = '/home/ubuntu/key.pem'
