@@ -1,5 +1,6 @@
 import cherrypy
 import cherrypy_cors
+from os import path
 
 import Database
 from CourseOffering import CourseOffering
@@ -12,12 +13,16 @@ from Centre import Centre
 if __name__ == '__main__':
     db = Database.Database()
     cherrypy_cors.install()
-    cherrypy.config.update({
+    config = {
         'server.socket_host': '0.0.0.0',
-        # 'server.socket_port': '8081',
         'cors.expose.on': True
-    })
-    cherrypy.response.headers['Access-Control-Allow-Origin'] = '*'
+    }
+    if path.exists('cert.pem') and path.exists('key.pem'):
+        config['server.ssl_module'] = 'builtin'
+        config['server.ssl_certificate'] = '/home/ubuntu/cert.pem'
+        config['server.ssl_private_key'] = '/home/ubuntu/key.pem'
+        config['server.socket_port'] = 443
+    cherrypy.config.update(config)
     cherrypy.tree.mount(User(db=db), '/user')
     cherrypy.tree.mount(Student(db=db), '/student')
     cherrypy.tree.mount(Course(db=db), '/course')
