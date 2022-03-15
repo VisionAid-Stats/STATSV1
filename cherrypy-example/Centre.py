@@ -7,7 +7,7 @@ import Database
 class Centre:
     def __init__(self, db=Database.Database()):
         self.db = db
-        self.valid_columns = {'name', 'email', 'location'}
+        self.valid_columns = {'location'}
 
     @cherrypy.expose
     @cherrypy.tools.json_out()

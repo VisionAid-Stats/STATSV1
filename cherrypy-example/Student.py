@@ -7,8 +7,11 @@ import Database
 class Student():
     def __init__(self, db=Database.Database()):
         self.db = db
-        self.valid_columns = {'email', 'name', 'age', 'gender', 'visual_acuity', 'mobile', 'whatsapp', 'address',
-                              'visual_impairment', 'hear_about'}
+        self.valid_columns = {'email', 'name', 'age', 'gender', 'visual_acuity', 'mobile', 'whatsapp', 'education_qual',
+                              'address', 'education_detail', 'mother_tongue', 'education_tongue', 'employment_details',
+                              'computer_experience', 'expectations', 'share_permission', 'bank_account',
+                              'learning_objectives', 'visual_impairment', 'usable_vision', 'pct_vision_loss',
+                              'hear_about'}
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
