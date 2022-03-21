@@ -2,14 +2,20 @@ import mysql.connector
 
 
 class Database:
-    def __init__(self):
+    def __init__(self, cert=None, key=None):
         self.host = 'visionaid-db1.cwpyfpvknmbu.us-east-1.rds.amazonaws.com'
         self.user = 'VisionAidAdmin'
         self.password = 'Vi$i0n-AidPW#'
         self.database = 'visionaiddb1'
+        self.cert = cert
+        self.key = key
 
     def connect(self):
-        db = mysql.connector.connect(host=self.host, user=self.user, password=self.password)
+        if self.cert is None or self.key is None:
+            db = mysql.connector.connect(host=self.host, user=self.user, password=self.password)
+        else:
+            db = mysql.connector.connect(host=self.host, user=self.user, password=self.password,
+                                         ssl={'cert': self.cert, 'key': self.key})
         db.database = self.database
         return db
 
@@ -29,6 +35,15 @@ class Database:
 
     def execute_insert(self, table, columns=(), values=()):
         statement = 'INSERT INTO %s (%s) VALUES (%s)' % (table, ','.join(columns), ','.join(['%s'] * len(values)))
+        db = self.connect()
+        cursor = db.cursor(buffered=True)
+        cursor.execute(statement, values)
+        db.commit()
+        cursor.close()
+        db.close()
+
+    def execute_update(self, table, columns=(), values=(), where='id = 0'):
+        statement = 'UPDATE %s SET %s WHERE %s' % (table, ', '.join(map(lambda c: c + ' = %s', columns)), where)
         db = self.connect()
         cursor = db.cursor(buffered=True)
         cursor.execute(statement, values)

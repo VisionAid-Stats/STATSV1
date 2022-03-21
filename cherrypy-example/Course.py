@@ -45,7 +45,7 @@ class Course:
             data = cherrypy.request.json
             for col in data:
                 if col not in self.valid_columns:
-                    return {'error': 'invalid column "%s"; must be one of: %s' % (col, str(self.valid_columns))}
+                    return {'success': False, 'error': 'invalid column "%s"; must be one of: %s' % (col, str(self.valid_columns))}
                 columns.append(col)
                 values.append(data[col])
             self.db.execute_insert(table='course', columns=columns, values=values)
