@@ -15,7 +15,7 @@ class Database:
             db = mysql.connector.connect(host=self.host, user=self.user, password=self.password)
         else:
             db = mysql.connector.connect(host=self.host, user=self.user, password=self.password,
-                                         ssl={'cert': self.cert, 'key': self.key})
+                                         ssl_cert=self.cert, ssl_key=self.key)
         db.database = self.database
         return db
 
