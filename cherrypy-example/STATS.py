@@ -25,7 +25,7 @@ if __name__ == '__main__':
         # db = Database.Database(cert='/home/ubuntu/cert.pem', key='/home/ubuntu/key.pem')
         db = Database.Database()
     else:
-        config['server.socket_port'] = 8080
+        config['server.socket_port'] = 80
         db = Database.Database()
     cherrypy.config.update(config)
     cherrypy.tree.mount(User(db=db), '/user')
