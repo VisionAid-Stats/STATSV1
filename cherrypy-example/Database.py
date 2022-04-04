@@ -17,36 +17,54 @@ class Database:
             db = mysql.connector.connect(host=self.host, user=self.user, password=self.password,
                                          ssl_cert=self.cert, ssl_key=self.key)
         db.database = self.database
-        return db
+        return db, db.cursor(buffered=True)
 
     def execute_select(self, statement='SELECT 1', params=()):
         ret = []
-        db = self.connect()
-        cursor = db.cursor(buffered=True)
-        cursor.execute(statement, params)
-        for row in cursor.fetchall():
-            d = {}
-            for i in range(len(cursor.column_names)):
-                d[cursor.column_names[i]] = row[i]
-            ret.append(d)
-        cursor.close()
-        db.close()
+        db, cursor = self.connect()
+        try:
+            cursor.execute(statement, params)
+            for row in cursor.fetchall():
+                d = {}
+                for i in range(len(cursor.column_names)):
+                    d[cursor.column_names[i]] = row[i]
+                ret.append(d)
+        finally:
+            cursor.close()
+            db.close()
         return ret
 
     def execute_insert(self, table, columns=(), values=()):
-        statement = 'INSERT INTO %s (%s) VALUES (%s)' % (table, ','.join(columns), ','.join(['%s'] * len(values)))
-        db = self.connect()
-        cursor = db.cursor(buffered=True)
-        cursor.execute(statement, values)
-        db.commit()
-        cursor.close()
-        db.close()
+        statement = f'INSERT INTO {table} ({",".join(columns)}) VALUES ({",".join(["%s"] * len(values))})'
+        db, cursor = self.connect()
+        try:
+            cursor.execute(statement, values)
+            db.commit()
+        finally:
+            cursor.close()
+            db.close()
 
     def execute_update(self, table, columns=(), values=(), where='id = 0'):
-        statement = 'UPDATE %s SET %s WHERE %s' % (table, ', '.join(map(lambda c: c + ' = %s', columns)), where)
-        db = self.connect()
-        cursor = db.cursor(buffered=True)
-        cursor.execute(statement, values)
-        db.commit()
-        cursor.close()
-        db.close()
+        statement = f'UPDATE {table} SET {", ".join(map(lambda c: c + " = %s", columns))} WHERE {where}'
+        db, cursor = self.connect()
+        try:
+            cursor.execute(statement, values)
+            db.commit()
+        finally:
+            cursor.close()
+            db.close()
+
+    def execute_delete(self, table, primary_key, key_value):
+        db, cursor = self.connect()
+        try:
+            if type(primary_key) in (list, tuple):
+                statement = f'DELETE FROM {table} WHERE {" AND ".join(map(lambda c: f"{c} = %s", primary_key))}'
+                cursor.execute(statement, key_value)
+                db.commit()
+            else:
+                statement = f'DELETE FROM {table} WHERE {primary_key} = %s'
+                cursor.execute(statement, (key_value,))
+                db.commit()
+        finally:
+            cursor.close()
+            db.close()

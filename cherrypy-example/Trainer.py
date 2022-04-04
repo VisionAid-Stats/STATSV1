@@ -38,9 +38,44 @@ class Trainer:
                 if col not in self.valid_columns:
                     return {
                         'success': False,
-                        'error': 'invalid column "%s"; must be one of: %s' % (col, str(self.valid_columns))
+                        'error': f'invalid column "{col}"; must be one of: {str(self.valid_columns)}'
                     }
                 columns.append(col)
                 values.append(data[col])
             self.db.execute_insert(table='trainer', columns=columns, values=values)
+            return {'success': True}
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    def update(self):
+        if cherrypy.request.method == 'OPTIONS':
+            cherrypy_cors.preflight(allowed_methods=['PUT'])
+        else:
+            data = cherrypy.request.json
+            if 'trainer_id' not in data:
+                return {'success': False, 'error': 'Required column trainer_id missing'}
+            columns = []
+            values = []
+            for col in data:
+                if col == 'trainer_id':
+                    continue
+                if col not in self.valid_columns:
+                    return {
+                        'success': False,
+                        'error': f'invalid column "{col}"; must be one of: {str(self.valid_columns)}'
+                    }
+                columns.append(col)
+                values.append(data[col])
+            where = f'trainer_id = {data["trainer_id"]}'
+            self.db.execute_update(table='trainer', columns=columns, values=values, where=where)
+            return {'success': True}
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def delete(self, trainer_id):
+        if cherrypy.request.method == 'OPTIONS':
+            cherrypy_cors.preflight(allowed_methods=['DELETE'])
+        else:
+            self.db.execute_delete(table='trainer', primary_key='trainer_id', key_value=trainer_id)
             return {'success': True}

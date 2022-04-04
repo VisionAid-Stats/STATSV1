@@ -10,7 +10,8 @@ import Database
 class User:
     def __init__(self, db=Database.Database()):
         self.db = db
-        self.valid_columns = ['email', 'name', 'password', 'is_pm', 'is_admin']
+        self.valid_columns = ['email', 'name', 'password', 'is_pm', 'is_admin', 'enabled']
+        self.required_columns = ['email', 'name', 'password', 'is_pm', 'is_admin']
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -54,7 +55,7 @@ class User:
             cherrypy_cors.preflight(allowed_methods=['POST'])
         else:
             data = cherrypy.request.json
-            columns = list(self.valid_columns)
+            columns = list(self.required_columns)
             values = []
             for col in columns:
                 if col not in data:
@@ -84,7 +85,7 @@ class User:
                                               params=(data['email'],))
                 if len(user) > 1 or str(user[0]['user_id']) != str(data['user_id']):
                     return {'success': False, 'error': 'A different user with this email address already exists.'}
-            where = 'user_id = %s' % data['user_id']
+            where = f'user_id = {data["user_id"]}'
             columns = []
             values = []
             for col in data:
@@ -102,3 +103,35 @@ class User:
                     values.append(data[col])
             self.db.execute_update(table='user', columns=columns, values=values, where=where)
             return {'success': True}
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    def disable(self):
+        if cherrypy.request.method == 'OPTIONS':
+            cherrypy_cors.preflight(allowed_methods=['PUT'])
+        data = cherrypy.request.json
+        if 'user_id' not in data:
+            return {'success': False, 'error': 'Required column user_id missing'}
+        self.db.execute_update(
+            table='user',
+            columns=('enabled',),
+            values=(False,),
+            where=f'user_id = {data["user_id"]}')
+        return {'success': True}
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    def enable(self):
+        if cherrypy.request.method == 'OPTIONS':
+            cherrypy_cors.preflight(allowed_methods=['PUT'])
+        data = cherrypy.request.json
+        if 'user_id' not in data:
+            return {'success': False, 'error': 'Required column user_id missing'}
+        self.db.execute_update(
+            table='user',
+            columns=('enabled',),
+            values=(True,),
+            where=f'user_id = {data["user_id"]}')
+        return {'success': True}
