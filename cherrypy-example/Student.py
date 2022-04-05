@@ -122,3 +122,9 @@ class Student():
                     values=(data['student_id'], cid)
                 )
             return {'success': True}
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def languages(self):
+        languages = self.db.execute_select(statement='SELECT * FROM languages ORDER BY language')
+        return languages
