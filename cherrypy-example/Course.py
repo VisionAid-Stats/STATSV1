@@ -54,6 +54,9 @@ class Course:
             self.db.execute_insert(table='course', columns=columns, values=values)
             return {'success': True}
 
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
     def update(self):
         if cherrypy.request.method == 'OPTIONS':
             cherrypy_cors.preflight(allowed_methods=['PUT'])
