@@ -68,7 +68,7 @@ class CourseOffering:
     @cherrypy.tools.json_out()
     def update(self):
         if cherrypy.request.method == 'OPTIONS':
-            cherrypy_cors.preflight(allowed_methods=['POST'])
+            cherrypy_cors.preflight(allowed_methods=['PUT'])
         else:
             data = cherrypy.request.json
             if 'course_offering_id' not in data:
@@ -181,8 +181,20 @@ class CourseOffering:
                     JOIN trainer t ON t.trainer_id = o.trainer_id
                     JOIN centre ce ON ce.centre_id = o.centre_id
                     WHERE o.pm_user_id = %s
-                """
+                    """
         offerings = self.db.execute_select(statement=statement, params=(pm_user_id,))
         for o in offerings:
             o['start_date'] = str(o['start_date'])
         return offerings
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def get_students(self, course_offering_id):
+        statement = '''
+                    SELECT s.*
+                    FROM course_offering_link_student l
+                    JOIN student s ON s.student_id = l.student_id
+                    WHERE l.course_offering_id = %s;
+                    '''
+        students = self.db.execute_select(statement=statement, params=(course_offering_id,))
+        return students

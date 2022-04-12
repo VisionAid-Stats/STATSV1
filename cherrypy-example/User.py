@@ -83,7 +83,7 @@ class User:
             if 'email' in data:
                 user = self.db.execute_select(statement='SELECT user_id FROM user WHERE email = %s',
                                               params=(data['email'],))
-                if len(user) > 1 or str(user[0]['user_id']) != str(data['user_id']):
+                if len(user) > 0 and (len(user) > 1 or str(user[0]['user_id']) != str(data['user_id'])):
                     return {'success': False, 'error': 'A different user with this email address already exists.'}
             where = f'user_id = {data["user_id"]}'
             columns = []
