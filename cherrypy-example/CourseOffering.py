@@ -104,16 +104,17 @@ class CourseOffering:
     def add_student(self):
         if cherrypy.request.method == 'OPTIONS':
             cherrypy_cors.preflight(allowed_methods=['POST'])
-        data = cherrypy.request.json
-        if 'course_offering_id' not in data:
-            return {'success': False, 'error': 'missing "course_offering_id"'}
-        if 'student_id' not in data:
-            return {'success': False, 'error': 'missing "student_id"'}
-        self.db.execute_insert(
-            table='course_offering_link_student',
-            columns=('course_offering_id', 'student_id'),
-            values=(data['course_offering_id'], data['student_id']))
-        return {'success': True}
+        else:
+            data = cherrypy.request.json
+            if 'course_offering_id' not in data:
+                return {'success': False, 'error': 'missing "course_offering_id"'}
+            if 'student_id' not in data:
+                return {'success': False, 'error': 'missing "student_id"'}
+            self.db.execute_insert(
+                table='course_offering_link_student',
+                columns=('course_offering_id', 'student_id'),
+                values=(data['course_offering_id'], data['student_id']))
+            return {'success': True}
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -121,15 +122,16 @@ class CourseOffering:
     def remove_student(self):
         if cherrypy.request.method == 'OPTIONS':
             cherrypy_cors.preflight(allowed_methods=['POST'])
-        data = cherrypy.request.json
-        if 'course_offering_id' not in data:
-            return {'success': False, 'error': 'missing "course_offering_id"'}
-        if 'student_id' not in data:
-            return {'success': False, 'error': 'missing "student_id"'}
-        self.db.execute_delete(
-            table='course_offering_link_student',
-            primary_key=('course_offering_id', 'student_id'),
-            key_value=(data['course_offering_id'], data['student_id']))
+        else:
+            data = cherrypy.request.json
+            if 'course_offering_id' not in data:
+                return {'success': False, 'error': 'missing "course_offering_id"'}
+            if 'student_id' not in data:
+                return {'success': False, 'error': 'missing "student_id"'}
+            self.db.execute_delete(
+                table='course_offering_link_student',
+                primary_key=('course_offering_id', 'student_id'),
+                key_value=(data['course_offering_id'], data['student_id']))
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
