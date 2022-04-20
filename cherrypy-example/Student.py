@@ -64,8 +64,8 @@ class Student():
                     }
                 columns.append(col)
                 values.append(data[col])
-            self.db.execute_insert(table='student', columns=columns, values=values)
-            return {'success': True}
+            student_id = self.db.execute_insert(table='student', columns=columns, values=values)
+            return {'success': True, 'student_id': student_id}
 
     @cherrypy.expose
     @cherrypy.tools.json_in()

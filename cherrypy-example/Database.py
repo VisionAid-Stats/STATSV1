@@ -40,6 +40,7 @@ class Database:
         try:
             cursor.execute(statement, values)
             db.commit()
+            return cursor.lastrowid
         finally:
             cursor.close()
             db.close()

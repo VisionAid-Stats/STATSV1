@@ -11,7 +11,7 @@ class User:
     def __init__(self, db=Database.Database()):
         self.db = db
         self.valid_columns = ['email', 'name', 'password', 'is_pm', 'is_admin', 'enabled']
-        self.required_columns = ['email', 'name', 'password', 'is_pm', 'is_admin']
+        self.required_columns = ['email', 'name', 'password', 'is_pm']
 
     @cherrypy.expose
     @cherrypy.tools.json_out()

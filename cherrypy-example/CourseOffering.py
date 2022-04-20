@@ -1,5 +1,6 @@
 import cherrypy
 import cherrypy_cors
+import re
 
 import Database
 
@@ -9,7 +10,9 @@ class CourseOffering:
         self.db = db
         self.valid_columns = {'course_id', 'pm_user_id', 'trainer_id', 'centre_id', 'mode', 'start_date', 'end_date',
                               'frequency', 'duration', 'deposit', 'max_students'}
-        self.required_columns = {'course_id', 'pm_user_id'}
+        self.required_columns = {'course_id', 'pm_user_id', 'start_date'}
+        self.checklist_regex = re.compile(r'item_\d{1,2}_(completion|remarks)')
+        self.year_regex = re.compile(r'\d{2}(\d{2})-\d{2}-\d{2}')
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -60,8 +63,31 @@ class CourseOffering:
                     }
                 columns.append(col)
                 values.append(data[col])
-            self.db.execute_insert(table='course_offering', columns=columns, values=values)
-            return {'success': True}
+
+            # Get batch number
+            match = self.year_regex.match(data['start_date'])
+            if not match:
+                return {'success': False, 'error': 'No start_date provided or invalid format (expected YYYY-MM-DD)'}
+            yy = match.group(1)
+            statement = '''
+                SELECT COUNT(*) AS count
+                FROM course_offering
+                WHERE course_id = %s
+                AND start_date >= %s
+                AND start_date <= %s
+            '''
+            params = (data['course_id'], f'20{yy}-01-01', f'20{yy}-12-31')
+            count = self.db.execute_select(statement=statement, params=params)[0]['count']
+            batch = f'{count + 1}-{match.group(1)}'
+            columns.append('batch')
+            values.append(batch)
+
+            course_offering_id = self.db.execute_insert(table='course_offering', columns=columns, values=values)
+            self.db.execute_insert(
+                table='course_offering_checklist',
+                columns=('course_offering_id',),
+                values=(course_offering_id,))
+            return {'success': True, 'course_offering_id': course_offering_id}
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -200,3 +226,58 @@ class CourseOffering:
                     '''
         students = self.db.execute_select(statement=statement, params=(course_offering_id,))
         return students
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def get_checklist(self, course_offering_id):
+        statement = 'SELECT * FROM course_offering_checklist WHERE course_offering_id = %s'
+        checklist = self.db.execute_select(statement=statement, params=(course_offering_id,))
+        return checklist[0]
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    def update_checklist(self):
+        if cherrypy.request.method == 'OPTIONS':
+            cherrypy_cors.preflight(allowed_methods=['PUT'])
+        else:
+            data = cherrypy.request.json
+            columns = []
+            values = []
+            if 'course_offering_id' not in data:
+                return {
+                    'success': False,
+                    'error': 'course_offering_id is required'
+                }
+            where = f'course_offering_id = {data["course_offering_id"]}'
+            for col in data:
+                if col == 'course_offering_id':
+                    continue
+                if not self.checklist_regex.match(col):
+                    return {
+                        'success': False,
+                        'error': 'column name must be item_N_completion or item_N_remarks where N is between 1 and 15'
+                    }
+                columns.append(col)
+                values.append(data[col])
+            self.db.execute_update(table='course_offering', columns=columns, values=values, where=where)
+            return {'success': True}
+
+    # @cherrypy.expose
+    # @cherrypy.tools.json_in()
+    # @cherrypy.tools.json_out()
+    # def close(self):
+    #     if cherrypy.request.method == 'OPTIONS':
+    #         cherrypy_cors.preflight(allowed_methods=['POST'])
+    #     else:
+    #         data = cherrypy.request.json
+    #         if 'course_offering_id' not in data:
+    #             return {
+    #                 'success': False,
+    #                 'error': 'course_offering_id required'
+    #             }
+    #         if 'graduated_student_ids' not in data:
+    #             return {
+    #                 'success': False,
+    #                 'error': 'graduated_student_ids array required'
+    #             }
