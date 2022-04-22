@@ -87,11 +87,29 @@ class Course:
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    def delete(self, course_id):
+    def disable(self, course_id):
         if cherrypy.request.method == 'OPTIONS':
-            cherrypy_cors.preflight(allowed_methods=['DELETE'])
+            cherrypy_cors.preflight(allowed_methods=['PUT'])
         else:
-            self.db.execute_delete(table='course', primary_key='course_id', key_value=course_id)
+            self.db.execute_update(
+                table='course',
+                columns=('enabled',),
+                values=(0,),
+                where=f'course_id = {course_id}')
+            # self.db.execute_delete(table='course', primary_key='course_id', key_value=course_id)
+            return {'success': True}
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def enable(self, course_id):
+        if cherrypy.request.method == 'OPTIONS':
+            cherrypy_cors.preflight(allowed_methods=['PUT'])
+        else:
+            self.db.execute_update(
+                table='course',
+                columns=('enabled',),
+                values=(1,),
+                where=f'course_id = {course_id}')
             return {'success': True}
 
     @cherrypy.expose

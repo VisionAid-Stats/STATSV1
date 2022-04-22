@@ -73,9 +73,26 @@ class Centre:
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    def delete(self, centre_id):
+    def disable(self, centre_id):
         if cherrypy.request.method == 'OPTIONS':
             cherrypy_cors.preflight(allowed_methods=['DELETE'])
         else:
-            self.db.execute_delete(table='centre', primary_key='centre_id', key_value=centre_id)
+            self.db.execute_update(
+                table='centre',
+                columns=('enabled',),
+                values=(0,),
+                where=f'centre_id = {centre_id}')
+            return {'success': True}
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def enable(self, centre_id):
+        if cherrypy.request.method == 'OPTIONS':
+            cherrypy_cors.preflight(allowed_methods=['DELETE'])
+        else:
+            self.db.execute_update(
+                table='centre',
+                columns=('enabled',),
+                values=(1,),
+                where=f'centre_id = {centre_id}')
             return {'success': True}

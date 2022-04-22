@@ -1,5 +1,6 @@
 import cherrypy
 import cherrypy_cors
+from mysql.connector import IntegrityError
 
 import Database
 
@@ -114,14 +115,20 @@ class Student():
                 return {'success': False, 'error': 'Required column student_id missing'}
             if 'course_ids' not in data:
                 return {'success': False, 'error': 'Required array course_ids missing'}
+            added = []
+            failed = []
             # TODO: Add check for valid course/student ids
             for cid in data['course_ids']:
-                self.db.execute_insert(
-                    table='student_link_course_interest',
-                    columns=('student_id', 'course_id'),
-                    values=(data['student_id'], cid)
-                )
-            return {'success': True}
+                try:
+                    self.db.execute_insert(
+                        table='student_link_course_interest',
+                        columns=('student_id', 'course_id'),
+                        values=(data['student_id'], cid)
+                    )
+                    added.append(cid)
+                except IntegrityError:
+                    failed.append(cid)
+            return {'success': True, 'added': added, 'duplicates': failed}
 
     @cherrypy.expose
     @cherrypy.tools.json_out()

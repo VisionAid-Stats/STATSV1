@@ -38,13 +38,15 @@ class User:
     @cherrypy.tools.json_out()
     def login(self, email, password):
         user = self.db.execute_select(
-            statement='''SELECT user_id, name, email, is_admin, is_pm from user
-                         WHERE enabled = 1 AND email = %s AND password = sha2(%s, 512)''',
+            statement='''SELECT user_id, name, email, is_admin, is_pm, enabled FROM user
+                         WHERE email = %s AND password = sha2(%s, 512)''',
             params=(email, password))
         if len(user) == 0:
             return {'success': False, 'error': 'Login failed, invalid email address and/or password.'}
         if len(user) > 1:
-            return {'success': False, 'error': 'Fatal error, please contact an administrator'}
+            return {'success': False, 'error': 'Fatal error, please contact an administrator.'}
+        if not user['enabled']:
+            return {'success': False, 'error': 'Your account is disabled, please contact an administrator.'}
         return {'success': True, 'token': jwt.encode(user[0], 'Vi$i0nAid', algorithm='HS512')}
 
     @cherrypy.expose
