@@ -11,7 +11,7 @@ class User:
     def __init__(self, db=Database.Database()):
         self.db = db
         self.valid_columns = ['email', 'name', 'password', 'is_pm', 'is_admin', 'enabled']
-        self.required_columns = ['email', 'name', 'password', 'is_pm']
+        self.required_columns = ['email', 'name', 'password']
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -45,7 +45,7 @@ class User:
             return {'success': False, 'error': 'Login failed, invalid email address and/or password.'}
         if len(user) > 1:
             return {'success': False, 'error': 'Fatal error, please contact an administrator.'}
-        if not user['enabled']:
+        if not user[0]['enabled']:
             return {'success': False, 'error': 'Your account is disabled, please contact an administrator.'}
         return {'success': True, 'token': jwt.encode(user[0], 'Vi$i0nAid', algorithm='HS512')}
 

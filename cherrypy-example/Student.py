@@ -17,7 +17,7 @@ class Student():
     @cherrypy.expose
     @cherrypy.tools.json_out()
     def get_all(self):
-        students = self.db.execute_select(statement="SELECT * from student")
+        students = self.db.execute_select(statement="SELECT * from student ORDER BY student_id DESC")
         return students
 
     @cherrypy.expose

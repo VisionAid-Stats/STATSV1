@@ -12,10 +12,6 @@ from Trainer import Trainer
 from User import User
 
 
-# class Root:
-#     pass
-
-
 if __name__ == '__main__':
     cherrypy_cors.install()
     config = {
@@ -30,7 +26,7 @@ if __name__ == '__main__':
         # db = Database.Database(cert='/home/ubuntu/cert.pem', key='/home/ubuntu/key.pem')
         db = Database.Database()
     else:
-        config['server.socket_port'] = 80
+        config['server.socket_port'] = 8080
         db = Database.Database()
     cherrypy.config.update(config)
     cherrypy.tree.mount(User(db=db), '/user')
@@ -39,13 +35,6 @@ if __name__ == '__main__':
     cherrypy.tree.mount(Trainer(db=db), '/trainer')
     cherrypy.tree.mount(CourseOffering(db=db), '/course_offering')
     cherrypy.tree.mount(Centre(db=db), '/centre')
-    # cherrypy.tree.mount(Root(), '/', config={
-    #     '/': {
-    #         'tools.staticdir.on': True,
-    #         'tools.staticdir.dir': path.abspath(path.dirname(__file__) + '/static'),
-    #         'tools.staticdir.index': 'stats.html'
-    #     }
-    # })
     cherrypy.engine.signal_handler.subscribe()
     cherrypy.engine.start()
     cherrypy.engine.block()

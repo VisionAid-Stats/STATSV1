@@ -123,8 +123,9 @@ class Course:
                        FROM   student_link_course_interest i,
                               student s,
                               course c
-                       WHERE i.student_id = s.student_id
-                         AND i.course_id = c.course_id'''
+                       WHERE  i.student_id = s.student_id
+                         AND  i.course_id = c.course_id
+                         AND  taken = 0'''
         if course is not None:
             statement += ' AND (c.course_id = %s OR c.code = %s)'
             interests = self.db.execute_select(statement=statement, params=(course, course))

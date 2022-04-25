@@ -7,7 +7,7 @@ import Database
 class Trainer:
     def __init__(self, db=Database.Database()):
         self.db = db
-        self.valid_columns = {'name', 'email', 'location'}
+        self.valid_columns = {'name', 'email', 'location', 'qualifications', 'state'}
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -97,3 +97,7 @@ class Trainer:
                 values=(1,),
                 where=f'trainer_id = {trainer_id}')
             return {'success': True}
+
+    def get_states(self):
+        states = self.db.execute_select(statement='SELECT value from state')
+        return states

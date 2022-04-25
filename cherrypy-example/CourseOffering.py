@@ -2,6 +2,8 @@ import cherrypy
 import cherrypy_cors
 import re
 
+from mysql.connector import IntegrityError
+
 import Database
 
 
@@ -22,8 +24,13 @@ class CourseOffering:
                 SELECT 
                     o.course_offering_id,
                     o.start_date,
+                    o.end_date,
+                    o.mode,
+                    o.frequency,
+                    o.duration,
+                    o.max_students,
                     o.course_id,
-                    o.batch,
+                    o.batch as batch_num,
                     c.name AS course_name,
                     c.code AS course_code,
                     o.trainer_id,
@@ -37,6 +44,7 @@ class CourseOffering:
                 JOIN user u ON u.user_id = o.pm_user_id
                 JOIN trainer t ON t.trainer_id = o.trainer_id
                 JOIN centre ce ON ce.centre_id = o.centre_id
+                ORDER BY course_offering_id DESC
             """
         )
         for o in offerings:
@@ -87,7 +95,8 @@ class CourseOffering:
             self.db.execute_insert(
                 table='course_offering_checklist',
                 columns=('course_offering_id',),
-                values=(course_offering_id,))
+                values=(course_offering_id,)
+            )
             return {'success': True, 'course_offering_id': course_offering_id}
 
     @cherrypy.expose
@@ -167,8 +176,13 @@ class CourseOffering:
                     SELECT 
                         o.course_offering_id,
                         o.start_date,
+                        o.end_date,
+                        o.mode,
+                        o.frequency,
+                        o.duration,
+                        o.max_students,
                         o.course_id,
-                        o.batch,
+                        o.batch as batch_num,
                         c.name AS course_name,
                         c.code AS course_code,
                         o.trainer_id,
@@ -196,7 +210,13 @@ class CourseOffering:
                     SELECT 
                         o.course_offering_id,
                         o.start_date,
+                        o.end_date,
+                        o.mode,
+                        o.frequency,
+                        o.duration,
+                        o.max_students,
                         o.course_id,
+                        o.batch as batch_num,
                         c.name AS course_name,
                         c.code AS course_code,
                         o.trainer_id,
@@ -210,7 +230,10 @@ class CourseOffering:
                     JOIN user u ON u.user_id = o.pm_user_id
                     JOIN trainer t ON t.trainer_id = o.trainer_id
                     JOIN centre ce ON ce.centre_id = o.centre_id
-                    WHERE o.pm_user_id = %s
+                    WHERE
+                        o.pm_user_id = %s
+                        AND complete = 0 
+                    ORDER BY course_offering_id DESC
                     """
         offerings = self.db.execute_select(statement=statement, params=(pm_user_id,))
         for o in offerings:
@@ -234,6 +257,13 @@ class CourseOffering:
     def get_checklist(self, course_offering_id):
         statement = 'SELECT * FROM course_offering_checklist WHERE course_offering_id = %s'
         checklist = self.db.execute_select(statement=statement, params=(course_offering_id,))
+        if len(checklist) == 0:
+            self.db.execute_insert(
+                table='course_offering_checklist',
+                columns=('course_offering_id',),
+                values=(course_offering_id,)
+            )
+        checklist = self.db.execute_select(statement=statement, params=(course_offering_id,))
         return checklist[0]
 
     @cherrypy.expose
@@ -251,6 +281,17 @@ class CourseOffering:
                     'success': False,
                     'error': 'course_offering_id is required'
                 }
+
+            # See if checklist exists and if not, create
+            statement = 'SELECT * FROM course_offering_checklist WHERE course_offering_id = %s'
+            checklist = self.db.execute_select(statement=statement, params=(data['course_offering_id'],))
+            if len(checklist) == 0:
+                self.db.execute_insert(
+                    table='course_offering_checklist',
+                    columns=('course_offering_id',),
+                    values=(data['course_offering_id'],)
+                )
+
             where = f'course_offering_id = {data["course_offering_id"]}'
             for col in data:
                 if col == 'course_offering_id':
@@ -265,21 +306,51 @@ class CourseOffering:
             self.db.execute_update(table='course_offering', columns=columns, values=values, where=where)
             return {'success': True}
 
-    # @cherrypy.expose
-    # @cherrypy.tools.json_in()
-    # @cherrypy.tools.json_out()
-    # def close(self):
-    #     if cherrypy.request.method == 'OPTIONS':
-    #         cherrypy_cors.preflight(allowed_methods=['POST'])
-    #     else:
-    #         data = cherrypy.request.json
-    #         if 'course_offering_id' not in data:
-    #             return {
-    #                 'success': False,
-    #                 'error': 'course_offering_id required'
-    #             }
-    #         if 'graduated_student_ids' not in data:
-    #             return {
-    #                 'success': False,
-    #                 'error': 'graduated_student_ids array required'
-    #             }
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    def close(self):
+        if cherrypy.request.method == 'OPTIONS':
+            cherrypy_cors.preflight(allowed_methods=['POST'])
+        else:
+            data = cherrypy.request.json
+            if 'course_offering_id' not in data:
+                return {
+                    'success': False,
+                    'error': 'course_offering_id required'
+                }
+            if 'graduated_student_ids' not in data:
+                return {
+                    'success': False,
+                    'error': 'graduated_student_ids array required'
+                }
+            self.db.execute_update(
+                table='course_offering',
+                columns=('complete',),
+                values=(1,),
+                where=f'course_offering_id = {data["course_offering_id"]}'
+            )
+            cid = self.db.execute_select(
+                statement='SELECT course_id FROM course_offering WHERE course_offering_id = %s',
+                params=(data["course_offering_id"],)
+            )
+            for sid in data['graduated_student_ids']:
+                try:
+                    self.db.execute_update(
+                        table='course_offering_link_student',
+                        columns=('graduated',),
+                        values=(1,),
+                        where=f'course_offering_id = {data["course_offering_id"]} AND student_id = {sid}'
+                    )
+                except:
+                    pass
+                try:
+                    self.db.execute_update(
+                        table='student_link_course_interest',
+                        columns=('taken',),
+                        values=(1,),
+                        where=f'course_id = {cid} AND student_id = {sid}'
+                    )
+                except:
+                    pass
+            return {'success': True}
