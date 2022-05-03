@@ -98,6 +98,8 @@ class Trainer:
                 where=f'trainer_id = {trainer_id}')
             return {'success': True}
 
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
     def states(self):
         states = self.db.execute_select(statement='SELECT value from state ORDER BY value')
         return states

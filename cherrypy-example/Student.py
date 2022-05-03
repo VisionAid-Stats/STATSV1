@@ -147,6 +147,8 @@ class Student():
         languages = self.db.execute_select(statement='SELECT * FROM languages ORDER BY language')
         return languages
 
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
     def enrollments(self, student_id=None):
         statement = '''
                     SELECT
