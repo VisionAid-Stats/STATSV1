@@ -297,7 +297,7 @@ class CourseOffering:
             for col in data:
                 if col == 'course_offering_id':
                     continue
-                if not self.checklist_regex.match(col):
+                if not self.checklist_regex.match(col) or col == 'course_offering_id':
                     return {
                         'success': False,
                         'error': 'column name must be item_N_completion or item_N_remarks where N is between 1 and 15'
