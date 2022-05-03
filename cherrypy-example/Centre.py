@@ -12,7 +12,7 @@ class Centre:
     @cherrypy.expose
     @cherrypy.tools.json_out()
     def get_all(self):
-        centres = self.db.execute_select(statement="SELECT * from centre")
+        centres = self.db.execute_select(statement="SELECT * from centre WHERE enabled = 1 ORDER BY location")
         return centres
 
     @cherrypy.expose

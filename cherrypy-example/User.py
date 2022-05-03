@@ -57,11 +57,15 @@ class User:
             cherrypy_cors.preflight(allowed_methods=['POST'])
         else:
             data = cherrypy.request.json
-            columns = list(self.required_columns)
             values = []
-            for col in columns:
+            for col in self.required_columns:
                 if col not in data:
                     return {'success': False, 'error': 'Required column %s is missing.' % col}
+            columns = []
+            for col in data:
+                if col not in self.valid_columns:
+                    return {'success': False, 'error': f'Invalid column: {col}'}
+                columns.append(col)
                 if col == 'password':
                     values.append(hashlib.sha512(data[col].encode('UTF-8')).hexdigest())
                 else:

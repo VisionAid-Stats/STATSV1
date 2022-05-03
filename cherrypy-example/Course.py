@@ -12,7 +12,7 @@ class Course:
     @cherrypy.expose
     @cherrypy.tools.json_out()
     def get_all(self):
-        courses = self.db.execute_select(statement="SELECT * FROM course")
+        courses = self.db.execute_select(statement="SELECT * FROM course WHERE enabled = 1 ORDER BY name")
         return courses
 
     @cherrypy.expose
@@ -115,17 +115,19 @@ class Course:
     @cherrypy.expose
     @cherrypy.tools.json_out()
     def interests(self, course=None, student_id=None):
-        statement = '''SELECT i.student_id,
-                              i.course_id,
-                              s.name as student_name,
-                              c.code as course_code,
-                              c.name as course_name
-                       FROM   student_link_course_interest i,
-                              student s,
-                              course c
-                       WHERE  i.student_id = s.student_id
-                         AND  i.course_id = c.course_id
-                         AND  taken = 0'''
+        statement = '''
+                    SELECT i.student_id,
+                           i.course_id,
+                           s.name as student_name,
+                           c.code as course_code,
+                           c.name as course_name
+                    FROM   student_link_course_interest i,
+                           student s,
+                           course c
+                    WHERE  i.student_id = s.student_id
+                      AND  i.course_id = c.course_id
+                      AND  taken = 0
+                    '''
         if course is not None:
             statement += ' AND (c.course_id = %s OR c.code = %s)'
             interests = self.db.execute_select(statement=statement, params=(course, course))

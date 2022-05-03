@@ -12,7 +12,7 @@ class Trainer:
     @cherrypy.expose
     @cherrypy.tools.json_out()
     def get_all(self):
-        trainers = self.db.execute_select(statement="SELECT * from trainer")
+        trainers = self.db.execute_select(statement="SELECT * from trainer WHERE enabled = 1 ORDER BY name")
         return trainers
 
     @cherrypy.expose
@@ -99,5 +99,5 @@ class Trainer:
             return {'success': True}
 
     def get_states(self):
-        states = self.db.execute_select(statement='SELECT value from state')
+        states = self.db.execute_select(statement='SELECT value from state ORDER BY value')
         return states

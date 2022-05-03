@@ -12,12 +12,14 @@ class Student():
                               'address', 'education_detail', 'mother_tongue', 'education_tongue', 'employment_details',
                               'computer_experience', 'expectations', 'share_permission', 'bank_account',
                               'learning_objectives', 'visual_impairment', 'usable_vision', 'pct_vision_loss',
-                              'hear_about'}
+                              'hear_about', 'sharepoint_url'}
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    def get_all(self):
-        students = self.db.execute_select(statement="SELECT * from student ORDER BY student_id DESC")
+    def get_all(self, order='student_id'):
+        if order not in self.valid_columns:
+            return {'success': False, 'error': f'order must be one of: {", ".join(self.valid_columns)}'}
+        students = self.db.execute_select(statement="SELECT * from student ORDER BY %s DESC", params=(order,))
         return students
 
     @cherrypy.expose
@@ -65,6 +67,15 @@ class Student():
                     }
                 columns.append(col)
                 values.append(data[col])
+            student = self.db.execute_select(
+                statement='SELECT * FROM student WHERE email = %s OR mobile = %s',
+                params=(data['email'], data['mobile'])
+            )
+            if len(student) != 0:
+                return {
+                    'success': False,
+                    'error': 'A student record with this email address or mobile number already exists. Please contact VisionAid at info@visionaid.org to update your records.'
+                }
             student_id = self.db.execute_insert(table='student', columns=columns, values=values)
             return {'success': True, 'student_id': student_id}
 
@@ -135,3 +146,29 @@ class Student():
     def languages(self):
         languages = self.db.execute_select(statement='SELECT * FROM languages ORDER BY language')
         return languages
+
+    def enrollments(self, student_id=None):
+        statement = '''
+                    SELECT
+                        s.name AS student_name,
+                        c.name AS course_name,
+                        c.code AS course_code,
+                        o.batch AS course_batch,
+                        o.start_date,
+                        NOT o.complete AS in_progress,
+                        l.graduated,
+                        s.student_id,
+                        l.course_offering_id
+                    FROM course_offering_link_student l
+                    JOIN course_offering o
+                        ON o.course_offering_id = l.course_offering_id
+                    JOIN course c
+                        ON c.course_id = o.course_id
+                    JOIN student s
+                        ON s.student_id = l.student_id
+                    '''
+        if student_id is not None:
+            statement += f' WHERE student_id = {student_id}'
+        statement += 'ORDER BY student_name ASC, course_offering_id DESC'
+        enrollments = self.db.execute_select(statement=statement)
+        return enrollments
