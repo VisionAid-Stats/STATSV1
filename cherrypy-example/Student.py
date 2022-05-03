@@ -17,7 +17,7 @@ class Student():
     @cherrypy.expose
     @cherrypy.tools.json_out()
     def get_all(self, order='student_id'):
-        if order not in self.valid_columns:
+        if order != 'student_id' and order not in self.valid_columns:
             return {'success': False, 'error': f'order must be one of: {", ".join(self.valid_columns)}'}
         students = self.db.execute_select(statement="SELECT * from student ORDER BY %s DESC", params=(order,))
         return students
