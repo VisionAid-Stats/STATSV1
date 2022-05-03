@@ -98,6 +98,6 @@ class Trainer:
                 where=f'trainer_id = {trainer_id}')
             return {'success': True}
 
-    def get_states(self):
+    def states(self):
         states = self.db.execute_select(statement='SELECT value from state ORDER BY value')
         return states

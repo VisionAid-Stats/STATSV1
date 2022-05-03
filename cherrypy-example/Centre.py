@@ -75,7 +75,7 @@ class Centre:
     @cherrypy.tools.json_out()
     def disable(self, centre_id):
         if cherrypy.request.method == 'OPTIONS':
-            cherrypy_cors.preflight(allowed_methods=['DELETE'])
+            cherrypy_cors.preflight(allowed_methods=['PUT'])
         else:
             self.db.execute_update(
                 table='centre',
@@ -88,7 +88,7 @@ class Centre:
     @cherrypy.tools.json_out()
     def enable(self, centre_id):
         if cherrypy.request.method == 'OPTIONS':
-            cherrypy_cors.preflight(allowed_methods=['DELETE'])
+            cherrypy_cors.preflight(allowed_methods=['PUT'])
         else:
             self.db.execute_update(
                 table='centre',
