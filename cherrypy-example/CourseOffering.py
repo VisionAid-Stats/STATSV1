@@ -49,6 +49,7 @@ class CourseOffering:
         )
         for o in offerings:
             o['start_date'] = str(o['start_date'])
+            o['end_date'] = str(o['end_date'])
         return offerings
 
     @cherrypy.expose
