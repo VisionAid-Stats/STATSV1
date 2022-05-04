@@ -202,6 +202,7 @@ class CourseOffering:
         offering = self.db.execute_select(statement=statement, params=(course_offering_id,))
         if len(offering) > 0:
             offering[0]['start_date'] = str(offering[0]['start_date'])
+            offering[0]['end_date'] = str(offering[0]['end_date'])
         return offering
 
     @cherrypy.expose
@@ -239,6 +240,7 @@ class CourseOffering:
         offerings = self.db.execute_select(statement=statement, params=(pm_user_id,))
         for o in offerings:
             o['start_date'] = str(o['start_date'])
+            o['end_date'] = str(o['end_date'])
         return offerings
 
     @cherrypy.expose
@@ -297,7 +299,7 @@ class CourseOffering:
             for col in data:
                 if col == 'course_offering_id':
                     continue
-                if not self.checklist_regex.match(col) or col == 'course_offering_id':
+                if not self.checklist_regex.match(col):
                     return {
                         'success': False,
                         'error': 'column name must be item_N_completion or item_N_remarks where N is between 1 and 15'
