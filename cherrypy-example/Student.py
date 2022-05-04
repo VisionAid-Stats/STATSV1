@@ -170,8 +170,8 @@ class Student():
                         ON s.student_id = l.student_id
                     '''
         if student_id is not None:
-            statement += f' WHERE student_id = {student_id}'
-        statement += 'ORDER BY student_name ASC, course_offering_id DESC'
+            statement += f' WHERE l.student_id = {student_id}'
+        statement += ' ORDER BY student_name ASC, course_offering_id DESC'
         enrollments = self.db.execute_select(statement=statement)
         for e in enrollments:
             e['start_date'] = str(e['start_date'])

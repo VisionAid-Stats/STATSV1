@@ -306,7 +306,7 @@ class CourseOffering:
                     }
                 columns.append(col)
                 values.append(data[col])
-            self.db.execute_update(table='course_offering', columns=columns, values=values, where=where)
+            self.db.execute_update(table='course_offering_checklist', columns=columns, values=values, where=where)
             return {'success': True}
 
     @cherrypy.expose
