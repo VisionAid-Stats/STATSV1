@@ -271,7 +271,7 @@ class CourseOffering:
         for x in checklist:
             if 'completion' in x:
                 checklist[x] = str(checklist[x])
-        return checklist[0]
+        return checklist
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
