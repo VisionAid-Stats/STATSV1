@@ -267,6 +267,10 @@ class CourseOffering:
                 values=(course_offering_id,)
             )
         checklist = self.db.execute_select(statement=statement, params=(course_offering_id,))
+        checklist = checklist[0]
+        for x in checklist:
+            if 'completion' in x:
+                checklist[x] = str(checklist[x])
         return checklist[0]
 
     @cherrypy.expose
