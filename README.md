@@ -3,6 +3,7 @@
 ### https://tinyurl.com/visionaid-stats
 
 ### Team C4G GeorgiaTech: Phillip Chang, Awnish Choudhary, David Chun, Derek Winkler
+### Additional contributors: Dante Ciolfi, Santosh Vempala
 
 STATS V1.0
 Student Training & Tracking System 
